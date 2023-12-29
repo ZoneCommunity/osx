@@ -1,25 +1,40 @@
-[bits 16] ; 16 bit (i think)
-[org 0x7c00] ; nasm where code is or whatever
+[bits 16]
+[org 0x7c00]
 
-; need bios parameter path for real device i think
+; bios parameter block needed
+; we also need to clear the screen somehow?
+call print
+jmp $
 
+; I have no idea why this works or whatever but it does
+print:
+    mov si, hello ; Move the offset of hello to SI
+    call print_loop
+    ; Move to the next line
+    mov ah, 2         ; Set cursor position function
+    mov dh, 1         ; Move to the next row
+    mov dl, 0         ; Column
+    int 10h           ; Call video interrupt
+    mov si, hello2
+    call print_loop
 
-; idk what im doing lol, this is just 
-; going to print something
-; i'll make a term soon
-mov si, 0 ; move 0 to the si register, counter to print
-; the characters [hello]
+print_loop:
+    mov ah, 0x0e       ; Function 0x0E - Teletype output
+    mov al, [si]       ; Load the byte at address pointed by SI into AL
+    int 0x10           ; Call video interrupt
+    inc si             ; Move to the next character
 
-print:                      ; print the characters
-    mov ah, 0x0e            ; call to print characters
-    mov al, [hello + si]    ; move hello in al
-    int 0x10                ; trigger video inteurpt
-    add si, 1               ; add 1 to si
-    cmp byte [hello + si], 0     ; see if memory contains 0
-    jne print               ; if it doesn't print next char
+    cmp byte [si], 0   ; Check if the next character is the null terminator
+    jne print_loop     ; If not, continue printing
 
-hello:                      ; string
-    db "Hello, world!", 0   ; 0 bytes
+    ret
 
-times 510 - ($-$$) db 0 ; fills rest of program with 0's for sector
+; hello:                 ; String
+;    db "Hello, world! This is ZoneOS :)", 0   ; Null-terminated string
+
+;temp
+hello db "Hello, world! This is ZoneOS :)", 0
+hello2 db "Type your command below!", 0
+
+times 510 - ($-$$) db 0 ; Fill the rest of the sector with zeros
 dw 0xAA55
