@@ -6,3 +6,5 @@ This is probably a waste of time but I still want to try with real OSes -Creeper
 oh btw idk any asm or c (just like me with js, i barely know js)
 
 I'm using macOS Sonoma 14.2.1 (modified qemu build, macos bug causes some of the guest vm to go under the titlebar)
+
+run build.sh
