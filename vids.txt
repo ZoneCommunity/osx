@@ -1,0 +1,8 @@
+Some vids i used
+https://www.youtube.com/watch?v=xFrMXzKCXIc
+also a comment from it
+"@GlorytoTheMany
+You could point SI to hello and then use a LODSB loop to read characters in line, then you don't need to increment SI. By the way, if you do increment SI, you could use INC. It's more ergonomic in assembly and probably even takes less bytes. Infinite loops are quite bad for modern CPUs (also old ones I suppose), use CLI HLT to shut it down.
+@iUniversEi
+Very good points, I want to add just one or two more things: instead of loading the byte again from memory and comparing it with zero, once the stuff is in al anyway (and you do not need al afterwards), you could just >> and al,al; jnz print <<. Also, since ah seems to be not touched here, I would probably move the mov ah,0x0e out of the loop.  My god... what are we doing here? Philosophizing about the fastest hello world boot loader 😀 But I like it!
+"
