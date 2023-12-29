@@ -1,2 +1,2 @@
 nasm boot/bootloader.asm
-qemu-system-i386 -drive file=boot/bootloader,format=raw -monitor stdio
+qemu-system-i386 -drive file=boot/bootloader,format=raw -monitor stdio -display cocoa

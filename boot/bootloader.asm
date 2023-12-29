@@ -2,11 +2,17 @@
 [org 0x7c00]
 
 ; bios parameter block needed
-; we also need to clear the screen somehow?
+call cls
 call print
 jmp $
 
 ; I have no idea why this works or whatever but it does
+
+cls:
+    mov ah, 0x00
+    mov al, 0x03       ; text mode 80x25 16 colors
+    int 0x10
+    ret
 print:
     mov si, hello ; Move the offset of hello to SI
     call print_loop
