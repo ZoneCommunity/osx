@@ -36,7 +36,7 @@ init_protected_mode:
     mov gs, ax
 
     ; Use the Multiboot header to get the kernel address
-    mov ebx, 0x8000 ; The address where GRUB loads the Multiboot information
+    mov ebx, 0x8000 
     mov eax, [ebx+8] ; Get the address of the module structure
     mov ebx, [eax+4] ; Get the starting address of the module (kernel)
 
