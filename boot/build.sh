@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Assemble boot.asm to raw binary file
-nasm -f bin -o boot.bin boot.asm
+nasm -f bin -o build/boot.bin boot.asm
 
-# Create ISO directory if it doesn't exist
-mkdir -p iso
-
-# Copy boot binary to ISO directory
-cp boot.bin iso/
+# Delete the previous ISO if it exists
+rm -f ../ISO/os.iso
 
 # Create ISO image (macOS only)
-hdiutil makehybrid -o os.iso -hfs -iso -no-emul-boot -boot-load-size 4 -eltorito-boot iso/boot.bin iso/
+hdiutil makehybrid -o ../ISO/os.iso -hfs -iso -no-emul-boot -boot-load-size 4 -eltorito-boot build/boot.bin .
+
+# Boot with the ISO using QEMU
+qemu-system-x86_64 -cdrom ../ISO/os.iso
