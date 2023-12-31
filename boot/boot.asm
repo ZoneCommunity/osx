@@ -1,38 +1,82 @@
-; boot.asm - 64-bit bootloader
+[bits 16]
+
 section .text
-    global _start
+    jmp start
 
-_start:
-    ; Set up the stack pointer
-    mov rsp, stack
+cls:
+    mov ah, 0x00
+    mov al, 0x03           ; text mode 80x25 16 colors
+    int 0x10
+    ret
 
-    ; Load the kernel into memory
-    mov dl, 0    ; Drive number (0 for floppy, 80h for hard drive)
-    call load_kernel
+print:
+    mov si, hello           ; Move the offset of hello to SI
+    call print_loop
+    ; Move to the next line
+    mov ah, 2               ; Set cursor position function
+    inc dh                  ; Move to the next row
+    mov dl, 0               ; Column
+    int 0x10                 ; Call video interrupt
+    mov si, hello2
+    call print_loop
+    mov ah, 2               ; Set cursor position function
+    inc dh                  ; Move to the next row
+    mov dl, 0               ; Column
+    int 0x10                 ; Call video interrupt
 
-    ; Jump to the kernel
-    jmp kernel
+print_loop:
+    mov ah, 0x0e            ; Function 0x0E - Teletype output
+    mov al, [si]            ; Load the byte at the address pointed by SI into AL
+    int 0x10                ; Call video interrupt
+    inc si                  ; Move to the next character
 
-load_kernel:
-    ; Set up disk read parameters
-    mov ah, 2        ; BIOS read sector function
-    mov al, 1        ; Number of sectors to read
-    mov ch, 0        ; Cylinder number
-    mov dh, 0        ; Head number
-    mov cl, 2        ; Sector number
-    mov bx, kernel   ; Buffer address
-
-    ; Int 13h BIOS interrupt for disk I/O
-    int 0x13
-
-    ; Check if read was successful (AH should be 0)
-    cmp ah, 0
-    jne load_kernel   ; If not, try again
+    cmp byte [si], 0        ; Check if the next character is the null terminator
+    jne print_loop          ; If not, continue printing
 
     ret
 
-section .bss
-    stack resb 4096   ; 4 KB stack
+keyboard:
+    mov ah, 0               ; Function 0 - Read keyboard input
+    int 0x16                ; Call keyboard interrupt
+    mov ah, 0x0e            ; Function 0x0E - Teletype output
+    int 0x10                ; Call video interrupt
+    ret
 
-section .data
-    kernel db 512     ; Buffer for the kernel
+start:
+    call cls
+    call print
+    
+input_loop:
+    call keyboard           ; terminal, get keyboard input
+    cmp al, 13              ; Check if Enter key is pressed
+    je process_input
+    jmp input_loop          ; Repeat the loop for other keys
+
+process_input:
+    ; Process the entered command (implement your logic here)
+
+    ; For now, let's just print the typed characters.
+    mov si, buffer
+    call print_loop
+
+    ; Move to the next line
+    mov ah, 2               ; Set cursor position function
+    inc dh                  ; Move to the next row
+    mov dl, 0               ; Reset column to 0
+    int 0x10                 ; Call video interrupt
+
+    ; Clear the buffer for the next input
+    mov si, buffer
+    xor cx, cx
+    mov cx, buffer_size     ; Use buffer_size instead of a hard-coded value
+    rep stosb
+
+    jmp input_loop          ; Repeat the input loop
+
+hello db "Hello, world! This is ZoneOS :)", 0
+hello2 db "Type your command below!", 0
+buffer db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ; Buffer to store typed characters
+buffer_size equ 10     ; Size of the buffer
+
+times 510 - ($-$$) db 0   ; Fill the rest of the sector with zeros
+dw 0xAA55
