@@ -1,31 +1,43 @@
-[bits 16]
-[org 0x7E00]
+[bits 32]
+[org 0x8000]
+
+VIDEO_MEMORY equ 0xb8000
+WHITE_ON_BLACK equ 0x0f
+
+print_string_pm:
+    pusha
+    mov edx, VIDEO_MEMORY
+
+print_string_pm_loop:
+    mov al, [ebx] ; Load character from memory into AL
+    mov ah, WHITE_ON_BLACK
+
+    cmp al, 0
+    je print_string_pm_done
+
+    mov [edx], ax ; Store character and attribute in video memory
+    add ebx, 1
+    add edx, 2
+
+    jmp print_string_pm_loop
+
+print_string_pm_done:
+    popa
+    ret
 
 start:
-    ; Clear the screen
-    mov ah, 0x00 ; Video BIOS - Set Video Mode
-    mov al, 0x03 ; Video Mode 3 (80x25 text mode)
-    int 0x10 ; BIOS interrupt for video services
+    ; Set up the stack
+    mov ax, 0x7C0
+    add ax, 288
+    mov ss, ax
+    mov sp, 4096
 
-    mov si, hello_string ; Load the address of the string into SI register
+    mov ebx, hello_string
+    call print_string_pm
 
-print_loop:
-    ; Print the character at the current SI address
-    mov ah, 0x0E ; Video BIOS - Teletype Output
-    mov al, [si] ; Load the character from the address pointed by SI
-    cmp al, 0 ; Check if it's the null terminator (end of string)
-    je end_print ; If yes, jump to the end of printing
-    int 0x10 ; Print character
+    hlt
 
-    ; Move to the next character in the string
-    inc si
+hello_string db 'Hello, World!', 0
 
-    ; Jump back to the start of the loop
-    jmp print_loop
-
-end_print:
-
-hello_string db 'Hello World!', 0
-
-times 510 - ($ - $$) db 0 ; Pad the rest of the sector with zeros
-dw 0xAA55 ; Boot signature
+times 510 - ($ - $$) db 0
+dw 0xAA55
