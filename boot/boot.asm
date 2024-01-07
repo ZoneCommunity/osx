@@ -41,13 +41,16 @@ Boot:
     call Println
 	mov si, AnyKey
 	call Println
+
 	call GetPressedKey
 	
-	call Shutdown
+	call Println
 
 GetPressedKey:
-	mov ah, 0
+	mov ah, 01h
 	int 0x16
+
+	call Println
 	ret
 
 main:
